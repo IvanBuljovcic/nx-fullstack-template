@@ -56,8 +56,10 @@ Write-Host "Updating configuration files..." -ForegroundColor Green
 
 # Update package.json
 if (Test-Path "package.json") {
-    (Get-Content "package.json") -replace '"name": "nx-fullstack-app"', "`"name`": `"$PROJECT_NAME`"" | Set-Content "package.json"
-    Write-Host "✓ Updated package.json" -ForegroundColor Green
+    $content = Get-Content "package.json" -Raw
+    $content = $content -replace '"name": "nx-fullstack-app"', "`"name`": `"$PROJECT_NAME`""
+    $content | Set-Content "package.json" -NoNewline
+    Write-Host "[OK] Updated package.json" -ForegroundColor Green
 }
 
 # Update docker-compose.yml
@@ -68,21 +70,23 @@ if (Test-Path "docker-compose.yml") {
     $content = $content -replace 'POSTGRES_USER: app_user', "POSTGRES_USER: $DB_USER"
     $content = $content -replace 'POSTGRES_PASSWORD: app_dev_password', "POSTGRES_PASSWORD: $DB_PASSWORD"
     $content = $content -replace 'pg_isready -U app_user -d app_dev', "pg_isready -U $DB_USER -d $DB_NAME"
-    $content | Set-Content "docker-compose.yml"
-    Write-Host "✓ Updated docker-compose.yml" -ForegroundColor Green
+    $content | Set-Content "docker-compose.yml" -NoNewline
+    Write-Host "[OK] Updated docker-compose.yml" -ForegroundColor Green
 }
 
-# Update .env.example
+# Update api/.env.example
 if (Test-Path "api\.env.example") {
     $DATABASE_URL = "postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}?schema=public"
-    (Get-Content "api\.env.example") -replace 'DATABASE_URL=.*', "DATABASE_URL=$DATABASE_URL" | Set-Content "api\.env.example"
-    Write-Host "✓ Updated api\.env.example" -ForegroundColor Green
+    $content = Get-Content "api\.env.example" -Raw
+    $content = $content -replace 'DATABASE_URL=.*', "DATABASE_URL=$DATABASE_URL"
+    $content | Set-Content "api\.env.example" -NoNewline
+    Write-Host "[OK] Updated api\.env.example" -ForegroundColor Green
 }
 
-# Create .env from .env.example
+# Create api/.env from api/.env.example
 if ((Test-Path "api\.env.example") -and (-not (Test-Path "api\.env"))) {
     Copy-Item "api\.env.example" "api\.env"
-    Write-Host "✓ Created api\.env" -ForegroundColor Green
+    Write-Host "[OK] Created api\.env" -ForegroundColor Green
 }
 
 # Update README.md
@@ -92,8 +96,8 @@ if (Test-Path "README.md") {
     $content = $content -replace 'app_dev', $DB_NAME
     $content = $content -replace 'app_user', $DB_USER
     $content = $content -replace 'app_dev_password', $DB_PASSWORD
-    $content | Set-Content "README.md"
-    Write-Host "✓ Updated README.md" -ForegroundColor Green
+    $content | Set-Content "README.md" -NoNewline
+    Write-Host "[OK] Updated README.md" -ForegroundColor Green
 }
 
 Write-Host ""
@@ -108,4 +112,4 @@ Write-Host "3. cd api && pnpm prisma migrate dev --name init     # Create databa
 Write-Host "4. pnpm nx serve api                                 # Start backend (port 3000)"
 Write-Host "5. pnpm nx serve web                                 # Start frontend (port 4200)"
 Write-Host ""
-Write-Host "Happy coding! 🚀" -ForegroundColor Green
+Write-Host "Happy coding!" -ForegroundColor Green
